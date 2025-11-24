@@ -1,0 +1,46 @@
+JENKINS CI/CD PIPELINE GUIDE
+STEP 1 — CREATE BUILD JOB
+1. Jenkins → New Item
+Name: MavenWeb_Build
+Type: Freestyle project
+2. Configure:
+Source Code Management → Git
+Repository URL: https://github.com/shashank0103/MavenWeb
+Branch: */main
+3. Build Steps:
+Invoke Maven (clean)
+Invoke Maven (install)
+4. Post-Build:
+Archive artifacts: **/*
+Build other projects: MavenWeb_Test (Only if stable)
+STEP 2 — CREATE TEST JOB
+1. Jenkins → New Item → MavenWeb_Test
+2. Configure:
+Delete workspace before build
+3. Build Steps:
+Copy artifacts from MavenWeb_Build
+Invoke Maven: test
+4. Post-Build:
+Archive artifacts
+Build other projects → MavenWeb_Deploy
+STEP 3 — CREATE DEPLOY JOB
+1. Jenkins → New Item → MavenWeb_Deploy
+2. Configure:
+Delete workspace before build
+3. Build Step:
+Copy artifacts from MavenWeb_Test
+4. Post-Build:
+Deploy WAR/EAR to container
+WAR files: **/*.war
+Context path: webpath
+Tomcat 9.x Remote:
+URL: http://localhost:8085/
+Username: admin
+Password: 1234
+STEP 4 — CREATE PIPELINE VIEW
+Dashboard → + → Build Pipeline View
+Name: MavenWeb_Pipeline
+Initial Job: MavenWeb_Build
+STEP 5 — RUN PIPELINE
+Pipeline flow should be:
+MavenWeb_Build → MavenWeb_Test → MavenWeb_Deploy (all green)

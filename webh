@@ -1,5 +1,7 @@
 LAB ACTION PLAN FOR WEEK 11
 
+net start jenkins
+
 Jenkins-CI/CD
 1.	CI-Continous Integration using Webhooks .
 2.	Sending E-mail Notification on Build Failure or success
@@ -24,6 +26,7 @@ o	ngrok.exe http <Jenkins local host:8080>
 	http://abc123.ngrok.io/github-webhook/
 
 ngrok.exe config add-authtoken <your_auth_token_here>
+
 
 5.	Set Content type to:
 application/json

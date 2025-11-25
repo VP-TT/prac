@@ -22,6 +22,9 @@ Use ngrok to expose your local Jenkins to the internet:
 o	ngrok.exe http <Jenkins local host:8080>
 	Use the generated ngrok URL, e.g.:
 	http://abc123.ngrok.io/github-webhook/
+
+ngrok.exe config add-authtoken <your_auth_token_here>
+
 5.	Set Content type to:
 application/json
 6.	Under “Which events would you like to trigger this webhook?”, select:

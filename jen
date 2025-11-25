@@ -1,3 +1,6 @@
+Maven integration plugin, �Build pipeline plugin, �Pipeline utility, �Copy artifacts,�Deploy to container, Git SCM or Git pipeline for Blue Ocean.�
+
+
 Week 8: Jenkins Automation
 I.	Hands-on practice on manual creation of Jenkins pipeline using Maven projects from Github 
 II.	Create the job and build the pipeline for maven-java and maven-web project.

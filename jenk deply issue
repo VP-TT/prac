@@ -1,0 +1,216 @@
+Perfect — let’s get Tomcat **up and running** properly so Jenkins can deploy your WAR to it.
+
+You’re basically setting up Tomcat as a remote container that Jenkins can talk to over HTTP — and that means it must:
+
+1. Be running.
+2. Have the **Manager app** installed.
+3. Have a user with the **manager-script** role enabled.
+4. Be accessible to Jenkins (either on the same system or over the network).
+
+Let’s go step by step — simple, clean, and Windows-friendly since your Jenkins path shows `C:\ProgramData\Jenkins`.
+
+---
+
+## 🧱 Step 1 — Find your Tomcat installation
+
+Tomcat is usually installed in one of these places:
+
+```
+C:\Program Files\Apache Software Foundation\Tomcat 9.0
+C:\apache-tomcat-9.0.x
+```
+
+Inside it, you should see folders like:
+
+```
+bin/
+conf/
+webapps/
+logs/
+lib/
+```
+
+If you don’t have it yet, download Tomcat 9 (recommended, not 7 — the plugin still works fine):
+👉 [https://tomcat.apache.org/download-90.cgi](https://tomcat.apache.org/download-90.cgi)
+
+Extract it somewhere simple, e.g.:
+
+```
+C:\apache-tomcat-9.0.93
+```
+
+---
+
+## 🧩 Step 2 — Start Tomcat
+
+Open **Command Prompt** and navigate to Tomcat’s `bin` directory:
+
+```bash
+cd C:\apache-tomcat-9.0.93\bin
+startup.bat
+```
+
+You should see something like:
+
+```
+Using CATALINA_BASE:   "C:\apache-tomcat-9.0.93"
+Using CATALINA_HOME:   "C:\apache-tomcat-9.0.93"
+Tomcat started.
+```
+
+Now, open your browser:
+
+```
+http://localhost:8080
+```
+
+If it works, you’ll see the **Tomcat homepage**.
+
+If it doesn’t, check that port 8080 isn’t in use:
+
+```bash
+netstat -ano | find "8080"
+```
+
+If it shows another program using 8080, change Tomcat’s port in:
+
+```
+conf/server.xml
+```
+
+Find:
+
+```xml
+<Connector port="8080" protocol="HTTP/1.1"
+           connectionTimeout="20000"
+           redirectPort="8443" />
+```
+
+Change `8080` to something like `8081`, save, and restart Tomcat.
+
+---
+
+## 🔐 Step 3 — Enable the Tomcat Manager App
+
+Tomcat comes with a “manager” web application located in:
+
+```
+C:\apache-tomcat-9.0.93\webapps\manager
+```
+
+If that folder is missing, reinstall Tomcat — you need it for Jenkins deployment.
+
+---
+
+## 👤 Step 4 — Create a Tomcat user for Jenkins
+
+Open this file:
+
+```
+C:\apache-tomcat-9.0.93\conf\tomcat-users.xml
+```
+
+Add the following lines **before the closing `</tomcat-users>` tag**:
+
+```xml
+<role rolename="manager-gui"/>
+<role rolename="manager-script"/>
+<role rolename="manager-jmx"/>
+<role rolename="manager-status"/>
+<user username="jenkins" password="admin123" roles="manager-gui,manager-script,manager-jmx,manager-status"/>
+```
+
+Save the file.
+
+Restart Tomcat:
+
+```bash
+shutdown.bat
+startup.bat
+```
+
+Now test it in your browser:
+
+```
+http://localhost:8080/manager/html
+```
+
+Login with:
+
+* Username: `jenkins`
+* Password: `admin123`
+
+If you see the Tomcat Manager interface — perfect.
+
+---
+
+## 🔗 Step 5 — Test remote access
+
+Run this in a Command Prompt on the Jenkins server:
+
+```bash
+curl http://localhost:8080/manager/text/list --user jenkins:admin123
+```
+
+If it returns a list of webapps (like `/manager`, `/host-manager`, `/docs`, etc.), it means Tomcat is listening and the credentials work.
+
+---
+
+## 🧰 Step 6 — Configure Jenkins “Deploy WAR/EAR” step
+
+In Jenkins:
+
+1. Go to your **MavenWeb_Deploy** job → *Configure*.
+2. Scroll to **Post-build Actions → Deploy war/ear to a container**.
+3. Set:
+
+   * WAR/EAR files:
+     `**/target/my-web-app.war`
+   * Context path:
+     `/my-web-app`
+   * Container:
+     `Tomcat 9.x Remote`
+   * Credentials:
+     Username `jenkins`, Password `admin123`
+   * Tomcat URL:
+     `http://localhost:8080`
+
+Save and build again.
+
+---
+
+## 🧪 Step 7 — Confirm Deployment
+
+If everything is correct, you’ll see:
+
+```
+[DeployPublisher][INFO] Deploying ... to container Tomcat 9.x Remote
+[DeployPublisher][INFO] Deployment successful
+```
+
+And in your browser:
+
+```
+http://localhost:8080/my-web-app
+```
+
+Your app should load.
+
+---
+
+## 🧠 If You’re Still Getting “Connection Refused”
+
+Run through this checklist quickly:
+
+* Tomcat is started (`startup.bat` shows no error).
+* You can open `http://localhost:8080` in your browser.
+* The Tomcat Manager URL (`/manager/html`) opens and lets you log in.
+* Jenkins job uses the **same host and port**.
+* Jenkins user and Tomcat user credentials match.
+* No firewall or antivirus is blocking local network access (try disabling temporarily to test).
+
+---
+
+Once Tomcat is running stably, Jenkins → Tomcat deployment will become automatic.
+
+Would you like me to show you how to make Tomcat **auto-start on system boot** (so Jenkins can deploy anytime without you manually running startup.bat)?

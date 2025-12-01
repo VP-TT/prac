@@ -80,6 +80,10 @@ Step 4: Now you can connect local system to server (EC2 instance) using secure s
 For this, Here copy the ssh – i command from SSH client connect tab and paste later
 Next We can use powershell /gitbash /webconsole in administrative mode, to connect to ubuntu machine.
 Step a: Copy the path of .pem file that you saved earlier in folder AWS eg.  as here D:\SUNNY\SELABWEB\AWS
+
+
+sudo usermod -aG docker $USER
+
   
  
 Step b: Open Powershell in administrative mode and navigate to that path. 
